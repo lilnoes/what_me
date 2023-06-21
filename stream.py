@@ -1,3 +1,4 @@
+from datetime import datetime
 import pyaudio
 import asyncio
 import aiohttp
@@ -5,14 +6,17 @@ import json
 import os
 import sys
 import websockets
+from dotenv import load_dotenv
 
-from datetime import datetime
+load_dotenv()
+
 
 startTime = datetime.now()
 
-all_mic_data = []
-all_transcripts = []
+all_transcripts = ""
 
+DEEPGRAM_API_KEY = os.environ["DEEPGRAM_API_KEY"]
+DEEPGRAM_HOST = "wss://api.deepgram.com"
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
@@ -27,20 +31,17 @@ def mic_callback(input_data, frame_count, time_info, status_flag):
     return (input_data, pyaudio.paContinue)
 
 
-async def run(key, method, format, **kwargs):
-    deepgram_url = f'{kwargs["host"]}/v1/listen?punctuate=true'
+async def run():
+    deepgram_url = f'{DEEPGRAM_HOST}/v1/listen?punctuate=true'
 
-    deepgram_url += "&encoding=linear16&sample_rate=16000"
+    deepgram_url += f"&encoding=linear16&sample_rate={RATE}"
 
     # Connect to the real-time streaming endpoint, attaching our credentials.
-    async with websockets.connect(deepgram_url, extra_headers={"Authorization": f"Token {key}"}) as ws:
-        print(f'Request ID: {ws.response_headers.get("dg-request-id")}')
-
+    async with websockets.connect(deepgram_url, extra_headers={"Authorization": f"Token {DEEPGRAM_API_KEY}"}) as ws:
         async def sender(ws):
             try:
                 while True:
                     mic_data = await audio_queue.get()
-                    all_mic_data.append(mic_data)
                     await ws.send(mic_data)
             except websockets.exceptions.ConnectionClosedOK:
                 await ws.send(json.dumps({"type": "CloseStream"}))
@@ -50,24 +51,21 @@ async def run(key, method, format, **kwargs):
             return
 
         async def receiver(ws):
+            global all_transcripts
             """Print out the messages received from the server."""
             transcript = ""
 
             async for msg in ws:
                 res = json.loads(msg)
                 try:
-                    # handle local server messages
-                    if res.get("msg"):
-                        print(res["msg"])
                     if res.get("is_final"):
                         transcript = (
                             res.get("channel", {})
                             .get("alternatives", [{}])[0]
                             .get("transcript", "")
                         )
-                        if transcript != "":
-                            print(transcript)
-                            all_transcripts.append(transcript)
+                        print(transcript)
+                        all_transcripts += transcript
 
                 except KeyError:
                     print(f"ERROR: Received unexpected API response! {msg}")
@@ -106,7 +104,7 @@ async def run(key, method, format, **kwargs):
 
 def main():
     """Entrypoint for the example."""
-    asyncio.run(run("key", "mic", format))
+    asyncio.run(run())
 
 
 if __name__ == "__main__":
