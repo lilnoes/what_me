@@ -1,17 +1,12 @@
-from datetime import datetime
 import pyaudio
 import asyncio
-import aiohttp
 import json
 import os
-import sys
 import websockets
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
-startTime = datetime.now()
 
 all_transcripts = ""
 
@@ -25,13 +20,12 @@ CHUNK = 8000
 audio_queue = asyncio.Queue()
 
 
-# Used for microphone streaming only.
 def mic_callback(input_data, frame_count, time_info, status_flag):
     audio_queue.put_nowait(input_data)
     return (input_data, pyaudio.paContinue)
 
 
-async def run():
+async def run(transcript_queue):
     deepgram_url = f'{DEEPGRAM_HOST}/v1/listen?punctuate=true'
 
     deepgram_url += f"&encoding=linear16&sample_rate={RATE}"
@@ -64,8 +58,11 @@ async def run():
                             .get("alternatives", [{}])[0]
                             .get("transcript", "")
                         )
-                        print(transcript)
+                        transcript = re.sub(r"\s+", " ", transcript)
+                        # print(transcript)
                         all_transcripts += transcript
+                        transcript_queue.put_nowait(
+                            (all_transcripts, transcript))
 
                 except KeyError:
                     print(f"ERROR: Received unexpected API response! {msg}")
@@ -102,10 +99,6 @@ async def run():
         await asyncio.gather(*functions)
 
 
-def main():
-    """Entrypoint for the example."""
-    asyncio.run(run())
-
-
-if __name__ == "__main__":
-    sys.exit(main() or 0)
+# def main():
+#     """Entrypoint for the example."""
+#     asyncio.run(run())
