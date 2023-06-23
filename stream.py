@@ -40,13 +40,12 @@ async def run(transcript_queue):
             except websockets.exceptions.ConnectionClosedOK:
                 await ws.send(json.dumps({"type": "CloseStream"}))
             except Exception as e:
-                print(f"Error while sending: {str(e)}")
+                print(f"🔴 Error while sending: {str(e)}")
                 raise
             return
 
         async def receiver(ws):
             global all_transcripts
-            """Print out the messages received from the server."""
             transcript = ""
 
             async for msg in ws:
@@ -65,7 +64,7 @@ async def run(transcript_queue):
                             (all_transcripts, transcript))
 
                 except KeyError:
-                    print(f"ERROR: Received unexpected API response! {msg}")
+                    print(f"🔴 ERROR: Received unexpected API response! {msg}")
 
         # Set up microphone if streaming from mic
         async def microphone():
@@ -80,6 +79,7 @@ async def run(transcript_queue):
             )
 
             stream.start_stream()
+            print("🟢 Started streaming")
 
             global SAMPLE_SIZE
             SAMPLE_SIZE = audio.get_sample_size(FORMAT)

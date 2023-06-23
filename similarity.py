@@ -21,5 +21,5 @@ def getSimilarity(text1, text2):
             (np.linalg.norm(vector1) * np.linalg.norm(vector2))
         return similarity
     except Exception as e:
-        print(f"Error getting similarity {e}")
+        print(f"🔴 Error getting similarity {e}")
         return 0

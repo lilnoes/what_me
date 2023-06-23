@@ -16,6 +16,6 @@ def sendMessage(body):
             body=body
         )
 
-        print("Message sent")
+        print("🟢 Message sent")
     except Exception as e:
-        print(f"Error sending message, Error: {e}")
+        print(f"🔴 Error sending message, Error: {e}")

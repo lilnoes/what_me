@@ -2,3 +2,5 @@
 .env
 record/*
 recordings
+__pycache__
+.vscode
