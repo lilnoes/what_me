@@ -10,11 +10,13 @@ load_dotenv()
 
 # parser = argparse.ArgumentParser()
 
+# queue to store all transcribed texts as tuple(all_transcripts, transcript)
 transcript_queue = asyncio.Queue()
 
 
 async def topicCallback(topic, max_words=10, time=10):
     while True:
+        # after every {seconds} check if the topic was mentioned
         await asyncio.sleep(time)
         (all_transcripts, transcript) = await transcript_queue.get()
         sim = similarity.getSimilarity(topic, all_transcripts[-max_words * 5:])
@@ -27,6 +29,7 @@ async def topicCallback(topic, max_words=10, time=10):
 
 async def nameCallback(name, time=1):
     while True:
+        # after each {time} seconds, check if your name was called.
         await asyncio.sleep(time)
         (all_transcripts, transcript) = await transcript_queue.get()
         if name.lower() not in transcript.lower():

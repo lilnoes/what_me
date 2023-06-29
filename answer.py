@@ -6,6 +6,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def getAnswer(name, text):
+    """
+    Function that uses chatgpt api to get the answer on your behalf
+    in case your name was called.
+    """
     try:
         completion = openai.ChatCompletion.create(
             model="gpt-4",

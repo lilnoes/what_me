@@ -9,6 +9,9 @@ client = Client(account_sid, auth_token)
 
 
 def sendMessage(body):
+    """
+    Send the message to the phone number using Twilio.
+    """
     try:
         client.messages.create(
             from_=FROM_NUMBER,

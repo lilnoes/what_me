@@ -21,11 +21,17 @@ audio_queue = asyncio.Queue()
 
 
 def mic_callback(input_data, frame_count, time_info, status_flag):
+    """
+    callback called for each stream of data from the mic. It appends the stream to the queue.
+    """
     audio_queue.put_nowait(input_data)
     return (input_data, pyaudio.paContinue)
 
 
 async def run(transcript_queue):
+    """
+    Function that streams from the microphone and sends the data to Deepgram's Nova for speech-to-text.
+    """
     deepgram_url = f'{DEEPGRAM_HOST}/v1/listen?punctuate=true'
 
     deepgram_url += f"&encoding=linear16&sample_rate={RATE}"
@@ -33,6 +39,9 @@ async def run(transcript_queue):
     # Connect to the real-time streaming endpoint, attaching our credentials.
     async with websockets.connect(deepgram_url, extra_headers={"Authorization": f"Token {DEEPGRAM_API_KEY}"}) as ws:
         async def sender(ws):
+            """
+            Function that sends microphone data to the Deepgram Nova server.
+            """
             try:
                 while True:
                     mic_data = await audio_queue.get()
@@ -45,6 +54,9 @@ async def run(transcript_queue):
             return
 
         async def receiver(ws):
+            """
+            Function that receives speech-to-text transcriptions from the Deepgram Nova server.
+            """
             global all_transcripts
             transcript = ""
 
@@ -57,6 +69,7 @@ async def run(transcript_queue):
                             .get("alternatives", [{}])[0]
                             .get("transcript", "")
                         )
+                        # trim all whitespaces
                         transcript = re.sub(r"\s+", " ", transcript)
                         # print(transcript)
                         all_transcripts += transcript
@@ -68,6 +81,9 @@ async def run(transcript_queue):
 
         # Set up microphone if streaming from mic
         async def microphone():
+            """
+            Function that sets up the microphone for streaming.
+            """
             audio = pyaudio.PyAudio()
             stream = audio.open(
                 format=FORMAT,
