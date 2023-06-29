@@ -1,5 +1,5 @@
 # Zoom meeting assistant
-[Medium link]()
+[Medium link](https://leonemma.medium.com/zoom-meeting-assistant-7245fb12fb82)
 
 A handy app that listens attentively during your meetings, notifying you every time your name is mentioned, ensuring you never miss an important reference. Additionally, it can also intelligently detect and alert you when specific topics of interest are being discussed, keeping you informed and engaged in relevant conversations.
 
@@ -15,7 +15,7 @@ A handy app that listens attentively during your meetings, notifying you every t
 6. Go to [OpenAI](https://platform.openai.com/) and create a new account and get the api key and fill to the OPENAI_API_KEY in the .env file.
 
 
-Read detailed instructions [here]()
+Read detailed instructions [here](https://leonemma.medium.com/zoom-meeting-assistant-7245fb12fb82)
 
 
 # How to use
